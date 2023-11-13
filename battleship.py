@@ -93,14 +93,48 @@ def PlaceShips(board):
 class HumanPlayer:
   def __init__( self ):
     self.action = None
+    self.defeated = False
     self.myBoard = InitBoard( )       # Player's board with ships
     self.opponentBoard = InitBoard( ) # Opponent's board, initially empty
-    pass
+                                      # This will hold the actions this player
+                                      # calls against the opponent
+  
+  def get_myBoard(self):
+    return self.myBoard
+  
+  def get_opponentBoard(self):
+    return self.opponentBoard
+  
+  def is_defeated(self):
+    return self.defeated
+  
+  def declare_defeat(self):
+    self.defeated = True
 
 
 def main( ):  
+  player1 = None
+  player2 = None
   
-  pass
+  if (len(sys.argv) < 2):
+    player1 = HumanPlayer()
+    player2 = HumanPlayer() # Switch to a random player once game is functional
+  
+  PlaceShips(player1.get_myBoard())
+  PlaceShips(player2.get_myBoard())
+
+  while (True):
+    if (player1.is_defeated()):
+      print("Player 2 has won")
+      return 0
+    
+    player1.Turn()
+
+    if (player2.is_defeated()):
+      print("Player 1 has won")
+      return 0
+
+    player2.Turn()
 
 
 if __name__ == '__main__':
