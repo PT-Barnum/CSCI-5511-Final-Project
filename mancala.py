@@ -175,17 +175,13 @@ def player(state):
     return state.current
 
 def actions(state):
-    pass
-    # '''Return a list of possible actions given the current state
-    # '''
-    # legal_actions = []
-    # for i in range(SIZE):
-    #     for j in range(SIZE):
-    #         if result(state, (i,j)) != None:
-    #             legal_actions.append((i,j))
-    # if len(legal_actions) == 0:
-    #     legal_actions.append(SKIP)
-    # return legal_actions
+    legal_actions = []
+    for Index in range(TOTAL_SPACES):
+        if ((Index != PLAYER_ONE_ZONE) and (Index != PLAYER_TWO_ZONE)):
+            if (state.mancala_board[Index] > 0):
+                legal_actions.append(Index)
+    
+    return legal_actions
 
 def result(state, action):
     pass
@@ -254,28 +250,65 @@ def terminal_test(state):
 
 
 def display(state):
-    pass
-    # '''Displays the current state in the terminal window
-    # '''
-    # print('  ', end='')
-    # for i in range(SIZE):
-    #     print(i,end='')
-    # print()
-    # for i in range(SIZE):
-    #     print(i, '', end='')
-    #     for j in range(SIZE):
-    #         if state.board_array[j][i] == WHITE:
-    #             print('W', end='')
-    #         elif state.board_array[j][i] == BLACK:
-    #             print('B', end='')
-    #         elif state.board_array[j][i] == BLOCKED:
-    #             print('X', end='')
-    #         else:
-    #             print('-', end='')
-    #     print()
+  zoneZero = f'{state.mancala_board[0]:02d}'      # PLAYER_ONE_ZONE
+  zoneOne = f'{state.mancala_board[1]:02d}'
+  zoneTwo = f'{state.mancala_board[2]:02d}'
+  zoneThree = f'{state.mancala_board[3]:02d}'
+  zoneFour = f'{state.mancala_board[4]:02d}'
+  zoneFive = f'{state.mancala_board[5]:02d}'
+  zoneSix = f'{state.mancala_board[6]:02d}'
+  zoneSeven = f'{state.mancala_board[7]:02d}'     # PLAYER_TWO_ZONE
+  zoneEight = f'{state.mancala_board[8]:02d}'
+  zoneNine = f'{state.mancala_board[9]:02d}'
+  zoneTen = f'{state.mancala_board[10]:02d}'
+  zoneEleven = f'{state.mancala_board[11]:02d}'
+  zoneTwelve = f'{state.mancala_board[12]:02d}'
+  zoneThirteen = f'{state.mancala_board[13]:02d}'
+
+  print()
+  print()
+  print("==================================================================================")
+  print("||        ||        ||        ||        ||        ||        ||        ||        ||")
+  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
+  print("||        ||        ||        ||        ||        ||        ||        ||        ||")
+  print("||   %s   ==============================================================   %s   ||" % (zoneZero, zoneSeven))
+  print("||        ||        ||        ||        ||        ||        ||        ||        ||")
+  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
+  print("||        ||        ||        ||        ||        ||        ||        ||        ||")
+  print("==================================================================================")
+  print()
+  print()
 
 def PlayMancala(playerOne=None, playerTwo=None):
-  pass
+  if playerOne == None:
+    playerOne = HumanPlayer(PLAYER_ONE_ZONE)
+  if playerTwo == None:
+    playerTwo = HumanPlayer(PLAYER_TWO_ZONE)
+
+  state = MancalaState(playerOne, playerTwo)
+  while True:
+    action = playerOne.make_move(state)
+    if action not in actions(state):
+      print("Illegal move made by Player Two")
+      print("Player One wins!")
+      return
+    state = result(state, action)
+    if terminal_test(state):
+      print("Game Over")
+      display(state)
+      display_final(state)
+      return
+    action = playerTwo.make_move(state)
+    if action not in actions(state):
+      print("Illegal move made by Player One")
+      print("Player Two wins!")
+      return
+    state = result(state, action)
+    if terminal_test(state):
+      print("Game Over")
+      display(state)
+      display_final(state)
+      return
 
 def main():
   # TODO: instantiate the board
