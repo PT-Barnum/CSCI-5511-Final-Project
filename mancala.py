@@ -245,25 +245,12 @@ def result(state, action):
     #     # if no pieces are flipped, it's not a legal move
     #     return None
 
-def terminal_test(state, index):
-    # '''Simple terminal test
-    # '''
-    # # if both players have skipped
-    # if state.num_skips == 2:
-    #     return True
-
-    # # if there are no empty spaces
-    # empty_count = 0
-    # for i in range(SIZE):
-    #     for j in range(SIZE):
-    #         if state.board_array[i][j] == EMPTY:
-    #             empty_count += 1
-    # if empty_count == 0:
-    #     return True
-    # return False
-    if (state.mancala_board[index] == 0):
-        return True
-    return False
+def terminal_test(state):
+    for Index in range(TOTAL_SPACES):
+        if ((Index != PLAYER_ONE_ZONE) and (Index != PLAYER_TWO_ZONE)):
+            if (state.mancala_board[Index] != 0):
+                return False
+    return True
 
 
 def display(state):
