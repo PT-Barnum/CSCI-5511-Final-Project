@@ -171,11 +171,121 @@ class MancalaState:
 #         return INVALID_MOVE
 #   return VALID_MOVE
 
+def player(state):
+    return state.current
+
+def actions(state):
+    pass
+    # '''Return a list of possible actions given the current state
+    # '''
+    # legal_actions = []
+    # for i in range(SIZE):
+    #     for j in range(SIZE):
+    #         if result(state, (i,j)) != None:
+    #             legal_actions.append((i,j))
+    # if len(legal_actions) == 0:
+    #     legal_actions.append(SKIP)
+    # return legal_actions
+
+def result(state, action):
+    pass
+    # '''Returns the resulting state after taking the given action
+
+    # (This is the workhorse function for checking legal moves as well as making moves)
+
+    # If the given action is not legal, returns None
+
+    # '''
+    # # first, special case! an action of SKIP is allowed if the current agent has no legal moves
+    # # in this case, we just skip to the other player's turn but keep the same board
+    # if action == SKIP:
+    #     newstate = RandOthelloState(state.other, state.current, copy.deepcopy(state.board_array), state.num_skips + 1)
+    #     return newstate
+
+    # if state.board_array[action[0]][action[1]] != EMPTY:
+    #     return None
+
+    # color = state.current.get_color()
+    # # create new state with players swapped and a copy of the current board
+    # newstate = RandOthelloState(state.other, state.current, copy.deepcopy(state.board_array))
+
+    # newstate.board_array[action[0]][action[1]] = color
+    
+    # flipped = False
+    # directions = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
+    # for d in directions:
+    #     i = 1
+    #     count = 0
+    #     while i <= SIZE:
+    #         x = action[0] + i * d[0]
+    #         y = action[1] + i * d[1]
+    #         if x < 0 or x >= SIZE or y < 0 or y >= SIZE:
+    #             count = 0
+    #             break
+    #         elif newstate.board_array[x][y] == -1 * color:
+    #             count += 1
+    #         elif newstate.board_array[x][y] == color:
+    #             break
+    #         else:
+    #             count = 0
+    #             break
+    #         i += 1
+
+    #     if count > 0:
+    #         flipped = True
+
+    #     for i in range(count):
+    #         x = action[0] + (i+1) * d[0]
+    #         y = action[1] + (i+1) * d[1]
+    #         newstate.board_array[x][y] = color
+
+    # if flipped:
+    #     return newstate
+    # else:  
+    #     # if no pieces are flipped, it's not a legal move
+    #     return None
+
+def terminal_test(state, index):
+    # '''Simple terminal test
+    # '''
+    # # if both players have skipped
+    # if state.num_skips == 2:
+    #     return True
+
+    # # if there are no empty spaces
+    # empty_count = 0
+    # for i in range(SIZE):
+    #     for j in range(SIZE):
+    #         if state.board_array[i][j] == EMPTY:
+    #             empty_count += 1
+    # if empty_count == 0:
+    #     return True
+    # return False
+    if (state.mancala_board[index] == 0):
+        return True
+    return False
 
 
-
-def DisplayBoard():
-  pass
+def display(state):
+    pass
+    # '''Displays the current state in the terminal window
+    # '''
+    # print('  ', end='')
+    # for i in range(SIZE):
+    #     print(i,end='')
+    # print()
+    # for i in range(SIZE):
+    #     print(i, '', end='')
+    #     for j in range(SIZE):
+    #         if state.board_array[j][i] == WHITE:
+    #             print('W', end='')
+    #         elif state.board_array[j][i] == BLACK:
+    #             print('B', end='')
+    #         elif state.board_array[j][i] == BLOCKED:
+    #             print('X', end='')
+    #         else:
+    #             print('-', end='')
+    #     print()
 
 def PlayMancala(playerOne=None, playerTwo=None):
   pass
