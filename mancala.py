@@ -11,12 +11,98 @@ LAST_ZONE = 13
 
 VALID_MOVE = 0
 INVALID_MOVE = 1
+TAKE_ANOTHER_MOVE = 2
+END_MOVE = 3
+ERROR_MOVE = 4
+MOVING = 5
 
-def alpha_beta_search(one, two, three):
+# TODO: Make utility function
+def Utility(zone, state):
   pass
 
-def minimax(one, two, three):
-  pass
+def alpha_beta_search(state, zone, depthlimit):
+  if ((depthlimit == 0) or terminal_test(state)):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  return max_value_ab(state, zone, depthlimit, -999999, 999999)
+
+
+def max_value_ab(state, zone, depthlimit, alpha, beta):
+  val = None
+  move = None
+  if ((depthlimit == 0) or (terminal_test(state))):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  val = -999999
+  for action in actions(state):
+    v2, a2 = min_value_ab(result(state, action), zone, depthlimit-1, alpha, beta)
+    if (v2 > val):
+      val, move = v2, action
+      alpha = max(val, alpha)
+    if (val >= beta):
+      return val, move
+  return val, move
+
+def min_value_ab(state, zone, depthlimit, alpha, beta):
+  val = None
+  move = None
+  if ((depthlimit == 0) or terminal_test(state)):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  val = 999999
+  for action in actions(state):
+    v2, a2 = max_value_ab(result(state, action), zone, depthlimit-1, alpha, beta)
+    if (v2 < val):
+      val, move = v2, action
+      beta = min(val, beta)
+    if (val <= alpha):
+      return val, move
+  return val, move
+
+
+def minimax(state, zone, depthlimit):
+  if ((depthlimit == 0) or terminal_test(state)):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  return max_value(state, zone, depthlimit)
+
+def max_value(state, zone, depthlimit):
+  if ((depthlimit == 0) or terminal_test(state)):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  val = -999999
+  move = None
+  for action in actions(state):
+    v2, a2 = min_value(state, zone, depthlimit-1)
+    if (v2 > val):
+      val, move = v2, action
+  return val, move
+
+def min_value(state, zone, depthlimit):
+  if ((depthlimit == 0) or terminal_test(state)):
+    val = Utility(zone, state)
+    legalActions = actions(state)
+    move = random.choice(legalActions)
+    return val, move
+  val = 999999
+  move = None
+  for action in actions(state):
+    v2, a2 = max_value(state, zone, depthlimit-1)
+    if (v2 < val):
+      val, move = v2, action
+  return val, move
+
+
 
 class MancalaPlayerTemplate:
     def __init__(self, myzone):
@@ -119,53 +205,130 @@ def player(state):
 
 
 def actions(state):
-    legal_actions = []
-    for Index in range(TOTAL_SPACES):
-        if ((Index != PLAYER_ONE_ZONE) and (Index != PLAYER_TWO_ZONE)):
-            if (state.mancala_board[Index] > 0):
-                legal_actions.append(Index)
+  legal_actions = []
+  if (state.current.get_zone() == PLAYER_ONE_ZONE):
+    for Index in range(1, 7):
+      if (state.mancala_board[Index] > 0):
+        legal_actions.append(Index)
+  else:
+    for Index in range(8, 14):
+      if (state.mancala_board[Index] > 0):
+        legal_actions.append(Index)
     
-    return legal_actions
+  return legal_actions
 
 
 def result(state, action):
   zone = state.current.get_zone()
-  newState = MancalaState(state.other, state.current, copy.deepcopy(state.mancala_board))
-  marbles = newState.mancala_board[action]
-  
-  index = action
-
+  marbles = state.mancala_board[action]
+  state.mancala_board[action] = 0
   if (action == LAST_ZONE):
     index = PLAYER_ONE_ZONE
-  elif (action == 6):
-    index = PLAYER_TWO_ZONE
   else:
-    index += 1
-
-  while (marbles):
-    if (index == PLAYER_ONE_ZONE):
-      if (index == zone):
-        newState.mancala_board[index] += 1
-        marbles -= 1
-      index += 1
-    elif (index == PLAYER_TWO_ZONE):
-      if (index == zone):
-        newState.mancala_board[index] += 1
-        marbles -= 1
-      index += 1
-    elif (index == LAST_ZONE):
-      newState.mancala_board[index] += 1
-      marbles -= 1
-      index = FIRST_ZONE
-    else:
-      newState.mancala_board[index] += 1
-      marbles -= 1
-      index += 1
-
-    if (marbles == 0):
-      marbles = newState.mancala_board[index]
+    index = action + 1
   
-  return newState
+  while (marbles):
+    if (marbles == 1):
+      if ((index == PLAYER_ONE_ZONE) and (zone == PLAYER_ONE_ZONE)):
+        state.mancala_board[index] += 1
+        marbles -= 1
+        return TAKE_ANOTHER_MOVE
+      elif ((index == PLAYER_TWO_ZONE) and (zone == PLAYER_TWO_ZONE)):
+        state.mancala_board[index] += 1
+        marbles -= 1
+        return TAKE_ANOTHER_MOVE
+      elif ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
+        index += 1
+      elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
+        index += 1
+      else:
+        state.mancala_board[index] += 1
+        marbles -= 1
+        if (state.mancala_board[index] == 1):
+          if ((index < PLAYER_TWO_ZONE) and (zone == PLAYER_ONE_ZONE)):
+            if (index == 1):
+              state.mancala_board[zone] += state.mancala_board[1]
+              state.mancala_board[zone] += state.mancala_board[13]
+              state.mancala_board[1] = 0
+              state.mancala_board[13] = 0
+            elif (index == 2):
+              state.mancala_board[zone] += state.mancala_board[2]
+              state.mancala_board[zone] += state.mancala_board[12]
+              state.mancala_board[2] = 0
+              state.mancala_board[12] = 0
+            elif (index == 3):
+              state.mancala_board[zone] += state.mancala_board[3]
+              state.mancala_board[zone] += state.mancala_board[11]
+              state.mancala_board[3] = 0
+              state.mancala_board[11] = 0
+            elif (index == 4):
+              state.mancala_board[zone] += state.mancala_board[4]
+              state.mancala_board[zone] += state.mancala_board[10]
+              state.mancala_board[4] = 0
+              state.mancala_board[10] = 0
+            elif (index == 5):
+              state.mancala_board[zone] += state.mancala_board[5]
+              state.mancala_board[zone] += state.mancala_board[9]
+              state.mancala_board[5] = 0
+              state.mancala_board[9] = 0
+            elif (index == 6):
+              state.mancala_board[zone] += state.mancala_board[6]
+              state.mancala_board[zone] += state.mancala_board[8]
+              state.mancala_board[6] = 0
+              state.mancala_board[8] = 0
+            else:
+              return ERROR_MOVE
+          elif ((index > PLAYER_TWO_ZONE) and (zone == PLAYER_TWO_ZONE)):
+            if (index == 8):
+              state.mancala_board[zone] += state.mancala_board[6]
+              state.mancala_board[zone] += state.mancala_board[8]
+              state.mancala_board[6] = 0
+              state.mancala_board[8] = 0
+            elif (index == 9):
+              state.mancala_board[zone] += state.mancala_board[5]
+              state.mancala_board[zone] += state.mancala_board[9]
+              state.mancala_board[5] = 0
+              state.mancala_board[9] = 0
+            elif (index == 10):
+              state.mancala_board[zone] += state.mancala_board[4]
+              state.mancala_board[zone] += state.mancala_board[10]
+              state.mancala_board[4] = 0
+              state.mancala_board[10] = 0
+            elif (index == 11):
+              state.mancala_board[zone] += state.mancala_board[3]
+              state.mancala_board[zone] += state.mancala_board[11]
+              state.mancala_board[3] = 0
+              state.mancala_board[11] = 0
+            elif (index == 12):
+              state.mancala_board[zone] += state.mancala_board[2]
+              state.mancala_board[zone] += state.mancala_board[12]
+              state.mancala_board[2] = 0
+              state.mancala_board[12] = 0
+            elif (index == 13):
+              state.mancala_board[zone] += state.mancala_board[1]
+              state.mancala_board[zone] += state.mancala_board[13]
+              state.mancala_board[1] = 0
+              state.mancala_board[13] = 0
+            else:
+              return ERROR_MOVE
+        else:
+          return END_MOVE
+        
+    else:
+      if ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
+        index += 1
+      elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
+        index += 1
+      elif (index == LAST_ZONE):
+        state.mancala_board[index] += 1
+        marbles -= 1
+        index = PLAYER_ONE_ZONE
+      else:
+        state.mancala_board[index] += 1
+        marbles -= 1
+        index += 1
+      
+  return END_MOVE
 
 
 def terminal_test(state):
@@ -264,7 +427,19 @@ def PlayMancala(playerOne=None, playerTwo=None):
       print("Illegal move made by Player One")
       print("Player Two wins!")
       return
-    state = result(state, action)
+    moving = TAKE_ANOTHER_MOVE
+    while (moving != END_MOVE):
+      moving = result(state, action)
+      if (moving == ERROR_MOVE):
+        print("Illegal move made by Player One")
+        print("Player Two wins!")
+        return
+      elif (moving == TAKE_ANOTHER_MOVE):
+        action = playerOne.make_move(state)
+    
+    newState = MancalaState(state.other, state.current, copy.deepcopy(state.mancala_board))
+    state = MancalaState(newState.current, newState.other, copy.deepcopy(newState.mancala_board))
+    
     if terminal_test(state):
       print("Game Over")
       Display(state)
@@ -275,7 +450,18 @@ def PlayMancala(playerOne=None, playerTwo=None):
       print("Illegal move made by Player Two")
       print("Player One wins!")
       return
-    state = result(state, action)
+    moving = TAKE_ANOTHER_MOVE
+    while (moving != END_MOVE):
+      moving = result(state, action)
+      if (moving == ERROR_MOVE):
+        print("Illegal move made by Player One")
+        print("Player Two wins!")
+        return
+      elif (moving == TAKE_ANOTHER_MOVE):
+        action = playerTwo.make_move(state)
+    
+    newState = MancalaState(state.other, state.current, copy.deepcopy(state.mancala_board))
+    state = MancalaState(newState.current, newState.other, copy.deepcopy(newState.mancala_board))
     if terminal_test(state):
       print("Game Over")
       Display(state)
