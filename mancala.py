@@ -332,11 +332,16 @@ def result(state, action):
 
 
 def terminal_test(state):
-    for Index in range(TOTAL_SPACES):
-        if ((Index != PLAYER_ONE_ZONE) and (Index != PLAYER_TWO_ZONE)):
-            if (state.mancala_board[Index] != 0):
-                return False
-    return True
+  if (state.current.get_zone() == PLAYER_ONE_ZONE):
+    for Index in range(1, PLAYER_TWO_ZONE):
+      if (state.mancala_board[Index] != 0):
+        return False
+  else:
+    for Index in range(8, 14):
+      if (state.mancala_board[Index] != 0):
+        return False
+
+  return True
 
 
 def Display(state):
