@@ -222,10 +222,10 @@ def result(state, action):
   zone = state.current.get_zone()
   marbles = state.mancala_board[action]
   state.mancala_board[action] = 0
-  if (action == LAST_ZONE):
-    index = PLAYER_ONE_ZONE
+  if (action == PLAYER_ONE_ZONE):
+    index = LAST_ZONE
   else:
-    index = action + 1
+    index = action - 1
   
   while (marbles):
     if (marbles == 1):
@@ -238,9 +238,9 @@ def result(state, action):
         marbles -= 1
         return TAKE_ANOTHER_MOVE
       elif ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
-        index += 1
+        index = LAST_ZONE
       elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
-        index += 1
+        index -= 1
       else:
         state.mancala_board[index] += 1
         marbles -= 1
@@ -316,17 +316,17 @@ def result(state, action):
         
     else:
       if ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
-        index += 1
+        index = LAST_ZONE
       elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
-        index += 1
-      elif (index == LAST_ZONE):
+        index -= 1
+      elif ((index == PLAYER_ONE_ZONE) and (zone == PLAYER_ONE_ZONE)):
         state.mancala_board[index] += 1
         marbles -= 1
-        index = PLAYER_ONE_ZONE
+        index = LAST_ZONE
       else:
         state.mancala_board[index] += 1
         marbles -= 1
-        index += 1
+        index -= 1
       
   return END_MOVE
 
@@ -336,10 +336,16 @@ def terminal_test(state):
     for Index in range(1, PLAYER_TWO_ZONE):
       if (state.mancala_board[Index] != 0):
         return False
+    for Index in range(8, LAST_ZONE+1):
+      state.mancala_board[PLAYER_TWO_ZONE] += state.mancala_board[Index]
+      state.mancala_board[Index] = 0
   else:
-    for Index in range(8, 14):
+    for Index in range(8, LAST_ZONE+1):
       if (state.mancala_board[Index] != 0):
         return False
+    for Index in range(1, PLAYER_TWO_ZONE):
+      state.mancala_board[PLAYER_ONE_ZONE] += state.mancala_board[Index]
+      state.mancala_board[Index] = 0
 
   return True
 
@@ -362,15 +368,17 @@ def Display(state):
 
   print()
   print()
+  print("          ||                       Bins on P1 Side                    ||          ")
   print("==================================================================================")
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
-  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
+  print("||   P1   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   P2   ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||   %s   ==============================================================   %s   ||" % (zoneZero, zoneSeven))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("==================================================================================")
+  print("          ||                       Bins on P2 Side                    ||          ")
   print()
   print()
 
@@ -393,15 +401,17 @@ def DisplayFinal(state):
 
   print()
   print()
+  print("          ||                       Bins on P1 Side                    ||          ")
   print("==================================================================================")
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
-  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
+  print("||   P1   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   P2   ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||   %s   ==============================================================   %s   ||" % (zoneZero, zoneSeven))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("==================================================================================")
+  print("          ||                       Bins on P2 Side                    ||          ")
   print()
   print()
   
