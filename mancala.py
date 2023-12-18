@@ -105,11 +105,15 @@ def max_value_ab(player, state, zone, depthlimit, alpha, beta):
   if ((depthlimit == 0) or (terminal_test(state))):
     val = Utility(player, zone, state)
     legalActions = actions(state)
+    if (legalActions == []): 
+      return val, None
     move = random.choice(legalActions)
     return val, move
   val = -999999
   for action in actions(state):
-    v2, a2 = min_value_ab(player, result(state, action), zone, depthlimit-1, alpha, beta)
+    new_state = copy.deepcopy(state)
+    result(new_state, action)
+    v2, a2 = min_value_ab(player, new_state, zone, depthlimit-1, alpha, beta)
     if (v2 > val):
       val, move = v2, action
       alpha = max(val, alpha)
@@ -123,11 +127,15 @@ def min_value_ab(player, state, zone, depthlimit, alpha, beta):
   if ((depthlimit == 0) or terminal_test(state)):
     val = Utility(player, zone, state)
     legalActions = actions(state)
+    if (legalActions == []): 
+      return val, None
     move = random.choice(legalActions)
     return val, move
   val = 999999
   for action in actions(state):
-    v2, a2 = max_value_ab(player, result(state, action), zone, depthlimit-1, alpha, beta)
+    new_state = copy.deepcopy(state)
+    result(new_state, action)
+    v2, a2 = max_value_ab(player, new_state, zone, depthlimit-1, alpha, beta)
     if (v2 < val):
       val, move = v2, action
       beta = min(val, beta)
@@ -148,12 +156,16 @@ def max_value(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
     val = Utility(player, zone, state)
     legalActions = actions(state)
+    if (legalActions == []): 
+      return val, None
     move = random.choice(legalActions)
     return val, move
   val = -999999
   move = None
   for action in actions(state):
-    v2, a2 = min_value(player, state, zone, depthlimit-1)
+    new_state = copy.deepcopy(state)
+    result(new_state, action)
+    v2, a2 = min_value(player, new_state, zone, depthlimit-1)
     if (v2 > val):
       val, move = v2, action
   return val, move
@@ -162,12 +174,16 @@ def min_value(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
     val = Utility(player, zone, state)
     legalActions = actions(state)
+    if (legalActions == []): 
+      return val, None
     move = random.choice(legalActions)
     return val, move
   val = 999999
   move = None
   for action in actions(state):
-    v2, a2 = max_value(player, state, zone, depthlimit-1)
+    new_state = copy.deepcopy(state)
+    result(new_state, action)
+    v2, a2 = max_value(player, new_state, zone, depthlimit-1)
     if (v2 < val):
       val, move = v2, action
   return val, move
@@ -301,9 +317,9 @@ def actions(state):
         legal_actions.append(Index)
   else:
     for Index in range(8, 14):
+      print(Index)
       if (state.mancala_board[Index] > 0):
         legal_actions.append(Index)
-    
   return legal_actions
 
 
@@ -510,13 +526,15 @@ def DisplayFinal(state):
 
 def PlayMancala(playerOne=None, playerTwo=None):
   if playerOne == None:
-    playerOne = HumanPlayer(PLAYER_ONE_ZONE, "1")
-    # playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
-    # playerOne = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "1")
+    # playerOne = HumanPlayer(PLAYER_ONE_ZONE, "1")
+    playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
+    # playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 4, "1")
+    # playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 4, "2")
   if playerTwo == None:
     # playerTwo = HumanPlayer(PLAYER_TWO_ZONE, "2")
-    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "2")
+    # playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "2")
     # playerTwo = RandomPlayer(PLAYER_ONE_ZONE, "2")
+    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 4, "2")
 
   state = MancalaState(playerOne, playerTwo)
   while True:
