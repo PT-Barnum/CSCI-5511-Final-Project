@@ -17,29 +17,99 @@ ERROR_MOVE = 4
 MOVING = 5
 
 # TODO: Make utility function
-def Utility(zone, state):
-  pass
+def Utility(player, zone, state):
+  copy_state = copy.copy(state)
+  player_one = state.mancala_board[0]
+  num_on_side_one = 0
+  player_two = state.mancala_board[7]
+  num_on_side_two = 0
+  score = 0
 
-def alpha_beta_search(state, zone, depthlimit):
+  # This means that they have the chance to steal
+  # for i in range(1,7):
+  #   # This means that the other player has the chance to steal
+  #   if (state.mancala_board[i] == 0):
+  #     player_one += 3
+  #   # num_on_side_one += state.mancala_board[i]
+
+  # for i in range(8, 14):
+  #   # This means that they have the chance to steal
+  #   if (state.mancala_board[i] == 0):
+  #     player_two += 3
+    # num_on_side_two += state.mancala_board[i]
+
+  # player_one = (num_on_side_one * 0.5)
+  # player_two = (num_on_side_two * 0.5)
+
+  # Encourages agent to make the move that will get it another turn
+
+  if player.get_player() == "1":
+
+    if state.mancala_board[1] == 12:
+      player_one -= 3
+    elif state.mancala_board[2] == 11:
+      player_one -= 3
+    elif state.mancala_board[3] == 10:
+      player_one -= 3
+    elif state.mancala_board[4] == 9:
+      player_one -= 3
+    elif state.mancala_board[5] == 8:
+      player_one -= 3
+    elif state.mancala_board[6] == 7:
+      player_one -= 3
+
+    score = player_one - player_two
+
+    if terminal_test(state) and player_one > player_two:
+      score += 20
+    elif terminal_test(state) and player_one < player_two:
+      score -= 20
+  elif player.get_player() == "2":
+
+    if state.mancala_board[8] == 12:
+      player_two -= 3
+    elif state.mancala_board[9] == 11:
+      player_two -= 3
+    elif state.mancala_board[10] == 10:
+      player_two -= 3
+    elif state.mancala_board[11] == 9:
+      player_two -= 3
+    elif state.mancala_board[12] == 8:
+      return 1000000000
+    elif state.mancala_board[13] == 7:
+      player_two -= 3
+      
+    score = player_two - player_one
+
+    if terminal_test(state) and player_one < player_two:
+      score += 20
+    elif terminal_test(state) and player_one > player_two:
+      score -= 20
+
+  return score
+  
+  
+
+def alpha_beta_search(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
-  return max_value_ab(state, zone, depthlimit, -999999, 999999)
+  return max_value_ab(player, state, zone, depthlimit, -999999, 999999)
 
 
-def max_value_ab(state, zone, depthlimit, alpha, beta):
+def max_value_ab(player, state, zone, depthlimit, alpha, beta):
   val = None
   move = None
   if ((depthlimit == 0) or (terminal_test(state))):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
   val = -999999
   for action in actions(state):
-    v2, a2 = min_value_ab(result(state, action), zone, depthlimit-1, alpha, beta)
+    v2, a2 = min_value_ab(player, result(state, action), zone, depthlimit-1, alpha, beta)
     if (v2 > val):
       val, move = v2, action
       alpha = max(val, alpha)
@@ -47,17 +117,17 @@ def max_value_ab(state, zone, depthlimit, alpha, beta):
       return val, move
   return val, move
 
-def min_value_ab(state, zone, depthlimit, alpha, beta):
+def min_value_ab(player, state, zone, depthlimit, alpha, beta):
   val = None
   move = None
   if ((depthlimit == 0) or terminal_test(state)):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
   val = 999999
   for action in actions(state):
-    v2, a2 = max_value_ab(result(state, action), zone, depthlimit-1, alpha, beta)
+    v2, a2 = max_value_ab(player, result(state, action), zone, depthlimit-1, alpha, beta)
     if (v2 < val):
       val, move = v2, action
       beta = min(val, beta)
@@ -66,38 +136,38 @@ def min_value_ab(state, zone, depthlimit, alpha, beta):
   return val, move
 
 
-def minimax(state, zone, depthlimit):
+def minimax(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
-  return max_value(state, zone, depthlimit)
+  return max_value(player, state, zone, depthlimit)
 
-def max_value(state, zone, depthlimit):
+def max_value(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
   val = -999999
   move = None
   for action in actions(state):
-    v2, a2 = min_value(state, zone, depthlimit-1)
+    v2, a2 = min_value(player, state, zone, depthlimit-1)
     if (v2 > val):
       val, move = v2, action
   return val, move
 
-def min_value(state, zone, depthlimit):
+def min_value(player, state, zone, depthlimit):
   if ((depthlimit == 0) or terminal_test(state)):
-    val = Utility(zone, state)
+    val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
     return val, move
   val = 999999
   move = None
   for action in actions(state):
-    v2, a2 = max_value(state, zone, depthlimit-1)
+    v2, a2 = max_value(player, state, zone, depthlimit-1)
     if (v2 < val):
       val, move = v2, action
   return val, move
@@ -105,8 +175,11 @@ def min_value(state, zone, depthlimit):
 
 
 class MancalaPlayerTemplate:
-    def __init__(self, myzone):
+    def __init__(self, myzone, player):
         self.zone = myzone
+
+    def get_player(self):
+      return self.player
 
     def get_zone(self):
         return self.zone
@@ -115,8 +188,12 @@ class MancalaPlayerTemplate:
         return None
 
 class HumanPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone):
+    def __init__(self, myzone, player):
         self.zone = myzone
+        self.player = player
+
+    def get_player(self):
+      return self.player
 
     def get_zone(self):
         return self.zone
@@ -140,9 +217,13 @@ class HumanPlayer(MancalaPlayerTemplate):
         return curr_move
 
 class AlphabetaPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, depthlimit):
+    def __init__(self, myzone, depthlimit, player):
         self.zone = myzone
         self.depthlimit = depthlimit
+        self.player = player
+
+    def get_player(self):
+      return self.player
 
     def get_zone(self):
         return self.zone
@@ -151,14 +232,18 @@ class AlphabetaPlayer(MancalaPlayerTemplate):
         return self.depthlimit
 
     def make_move(self, state):
-        returnTuple = alpha_beta_search(state, self.zone, self.depthlimit)
+        returnTuple = alpha_beta_search(self, state, self.zone, self.depthlimit)
         Display(state)
         return returnTuple[1]
 
 class MinimaxPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, depthlimit):
+    def __init__(self, myzone, depthlimit, player):
         self.zone = myzone
         self.depthlimit = depthlimit
+        self.player = player
+
+    def get_player(self):
+      return self.player
 
     def get_zone(self):
         return self.zone
@@ -167,13 +252,17 @@ class MinimaxPlayer(MancalaPlayerTemplate):
         return self.depthlimit
     
     def make_move(self, state):
-        returnTuple = minimax(state, self.zone, self.depthlimit)
+        returnTuple = minimax(self, state, self.zone, self.depthlimit)
         Display(state)
         return returnTuple[1]
 
 class RandomPlayer(MancalaPlayerTemplate):
-  def __init__(self, myzone):
+  def __init__(self, myzone, player):
     self.zone = myzone
+    self.player = player
+
+  def get_player(self):
+    return self.player
 
   def get_zone(self):
     return self.zone
@@ -361,7 +450,7 @@ def Display(state):
   zoneThirteen = f'{state.mancala_board[13]:02d}'
 
   print()
-  print()
+  print("  Player 1      1         2         3         4         5         6")
   print("==================================================================================")
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
@@ -371,7 +460,7 @@ def Display(state):
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("==================================================================================")
-  print()
+  print("               13        12        11        10        9          8     Player 2")
   print()
 
 
@@ -421,9 +510,13 @@ def DisplayFinal(state):
 
 def PlayMancala(playerOne=None, playerTwo=None):
   if playerOne == None:
-    playerOne = HumanPlayer(PLAYER_ONE_ZONE)
+    playerOne = HumanPlayer(PLAYER_ONE_ZONE, "1")
+    # playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
+    # playerOne = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "1")
   if playerTwo == None:
-    playerTwo = HumanPlayer(PLAYER_TWO_ZONE)
+    # playerTwo = HumanPlayer(PLAYER_TWO_ZONE, "2")
+    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "2")
+    # playerTwo = RandomPlayer(PLAYER_ONE_ZONE, "2")
 
   state = MancalaState(playerOne, playerTwo)
   while True:
