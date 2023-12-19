@@ -26,65 +26,65 @@ def Utility(player, zone, state):
   score = 0
 
   # This means that they have the chance to steal
-  # for i in range(1,7):
-  #   # This means that the other player has the chance to steal
-  #   if (state.mancala_board[i] == 0):
-  #     player_one += 3
-  #   # num_on_side_one += state.mancala_board[i]
+  for i in range(1,7):
+    # This means that the other player has the chance to steal
+    if (state.mancala_board[i] == 0):
+      player_one += 3
+    num_on_side_one += state.mancala_board[i]
 
-  # for i in range(8, 14):
-  #   # This means that they have the chance to steal
-  #   if (state.mancala_board[i] == 0):
-  #     player_two += 3
-    # num_on_side_two += state.mancala_board[i]
+  for i in range(8, 14):
+    # This means that they have the chance to steal
+    if (state.mancala_board[i] == 0):
+      player_two += 3
+    num_on_side_two += state.mancala_board[i]
 
-  # player_one = (num_on_side_one * 0.5)
-  # player_two = (num_on_side_two * 0.5)
+  player_one = (num_on_side_one * 0.5)
+  player_two = (num_on_side_two * 0.5)
 
   # Encourages agent to make the move that will get it another turn
 
-  if player.get_player() == "1":
+  # if player.get_player() == "1":
 
-    if state.mancala_board[1] == 12:
-      player_one -= 3
-    elif state.mancala_board[2] == 11:
-      player_one -= 3
-    elif state.mancala_board[3] == 10:
-      player_one -= 3
-    elif state.mancala_board[4] == 9:
-      player_one -= 3
-    elif state.mancala_board[5] == 8:
-      player_one -= 3
-    elif state.mancala_board[6] == 7:
-      player_one -= 3
+  #   if state.mancala_board[1] == 12:
+  #     player_one -= 3
+  #   elif state.mancala_board[2] == 11:
+  #     player_one -= 3
+  #   elif state.mancala_board[3] == 10:
+  #     player_one -= 3
+  #   elif state.mancala_board[4] == 9:
+  #     player_one -= 3
+  #   elif state.mancala_board[5] == 8:
+  #     player_one -= 3
+  #   elif state.mancala_board[6] == 7:
+  #     player_one -= 3
 
-    score = player_one - player_two
+  #   score = player_one - player_two
 
-    if terminal_test(state) and player_one > player_two:
-      score += 20
-    elif terminal_test(state) and player_one < player_two:
-      score -= 20
-  elif player.get_player() == "2":
+  #   if terminal_test(state) and player_one > player_two:
+  #     score += 20
+  #   elif terminal_test(state) and player_one < player_two:
+  #     score -= 20
+  # elif player.get_player() == "2":
 
-    if state.mancala_board[8] == 12:
-      player_two -= 3
-    elif state.mancala_board[9] == 11:
-      player_two -= 3
-    elif state.mancala_board[10] == 10:
-      player_two -= 3
-    elif state.mancala_board[11] == 9:
-      player_two -= 3
-    elif state.mancala_board[12] == 8:
-      return 1000000000
-    elif state.mancala_board[13] == 7:
-      player_two -= 3
+  #   if state.mancala_board[8] == 12:
+  #     player_two -= 3
+  #   elif state.mancala_board[9] == 11:
+  #     player_two -= 3
+  #   elif state.mancala_board[10] == 10:
+  #     player_two -= 3
+  #   elif state.mancala_board[11] == 9:
+  #     player_two -= 3
+  #   elif state.mancala_board[12] == 8:
+  #     player_two -= 3
+  #   elif state.mancala_board[13] == 7:
+  #     player_two -= 3
       
-    score = player_two - player_one
+  #   score = player_two - player_one
 
-    if terminal_test(state) and player_one < player_two:
-      score += 20
-    elif terminal_test(state) and player_one > player_two:
-      score -= 20
+  #   if terminal_test(state) and player_one < player_two:
+  #     score += 20
+  #   elif terminal_test(state) and player_one > player_two:
+  #     score -= 20
 
   return score
   
@@ -253,6 +253,26 @@ class AlphabetaPlayer(MancalaPlayerTemplate):
         return returnTuple[1]
 
 class MinimaxPlayer(MancalaPlayerTemplate):
+    def __init__(self, myzone, depthlimit, player):
+        self.zone = myzone
+        self.depthlimit = depthlimit
+        self.player = player
+
+    def get_player(self):
+      return self.player
+
+    def get_zone(self):
+        return self.zone
+    
+    def get_depthlimit(self):
+        return self.depthlimit
+    
+    def make_move(self, state):
+        returnTuple = minimax(self, state, self.zone, self.depthlimit)
+        Display(state)
+        return returnTuple[1]
+
+class MonteCarloPlayer(MancalaPlayerTemplate):
     def __init__(self, myzone, depthlimit, player):
         self.zone = myzone
         self.depthlimit = depthlimit
@@ -529,7 +549,7 @@ def PlayMancala(playerOne=None, playerTwo=None):
     # playerOne = HumanPlayer(PLAYER_ONE_ZONE, "1")
     playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
     # playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 4, "1")
-    # playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 4, "2")
+    # playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 4, "1")
   if playerTwo == None:
     # playerTwo = HumanPlayer(PLAYER_TWO_ZONE, "2")
     # playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "2")
