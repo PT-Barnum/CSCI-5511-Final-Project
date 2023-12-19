@@ -1,5 +1,6 @@
 import random
 import copy
+import sys
 
 # TOTAL_SPACES = PLAYABLE_SPACES + 2 player zones
 TOTAL_SPACES = 14
@@ -184,6 +185,21 @@ class RandomPlayer(MancalaPlayerTemplate):
     Display(state)
     return decision
 
+class MonteCarloPlayer(MancalaPlayerTemplate):
+  def __init__(self, myzone, depthlimit):
+    self.zone = myzone
+    self.depthlimit = depthlimit
+
+  def get_zone(self):
+    return self.zone
+    
+  def get_depthlimit(self):
+    return self.depthlimit
+    
+  def make_move(self, state):
+    returnTuple = minimax(state, self.zone, self.depthlimit)
+    Display(state)
+    return returnTuple[1]
 
 class MancalaState:
     def __init__(self, current_player, other_player, mancala_board = None):
@@ -432,8 +448,28 @@ def DisplayFinal(state):
 def PlayMancala(playerOne=None, playerTwo=None):
   if playerOne == None:
     playerOne = HumanPlayer(PLAYER_ONE_ZONE)
+  elif playerOne == 'h':
+    playerOne = HumanPlayer(PLAYER_ONE_ZONE)
+  elif playerOne == 'r':
+    playerOne = RandomPlayer(PLAYER_ONE_ZONE)
+  elif playerOne == 'mm':
+    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE)
+  elif playerOne == 'ab':
+    playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE)
+  elif playerOne == 'mc':
+    playerOne = MonteCarloPlayer(PLAYER_ONE_ZONE)
   if playerTwo == None:
+    playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
+  elif playerTwo == 'h':
     playerTwo = HumanPlayer(PLAYER_TWO_ZONE)
+  elif playerTwo == 'r':
+    playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
+  elif playerTwo == 'mm':
+    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE)
+  elif playerTwo == 'ab':
+    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE)
+  elif playerTwo == 'mc':
+    playerTwo = MonteCarloPlayer(PLAYER_TWO_ZONE)
 
   state = MancalaState(playerOne, playerTwo)
   while True:
@@ -484,8 +520,46 @@ def PlayMancala(playerOne=None, playerTwo=None):
       return
 
 def main():
-  # TODO: instantiate the board
-  PlayMancala()
+  playerOne = None
+  playerTwo = None
+
+  if (len(sys.argv) > 1):
+    if (sys.argv[1] == "help"):
+      print("To execute the mancala.py program with select agents, ")
+      print("the user must specify them using the following symbol correlations:")
+      print()
+      print("h: human agent")
+      print("r: random agent")
+      print("mm: minimax agent")
+      print("ab: alpha-beta agent")
+      print("mc: monte carlo agent")
+      print()
+      print("If the user does not select the agents for players one and two,")
+      print("the default will become:")
+      print("Player One = human agent")
+      print("Player Two = random agent")
+      print()
+      print("Example execution for the program with user-determined agents:")
+      print()
+      print("python mancala.py mm ab")
+      print()
+      print("This will result in the following matchup for a game of Mancala:")
+      print("Player One = minimax agent")
+      print("Player Two = alpha-beta agent")
+      return
+    
+    elif (len(sys.argv) == 2):
+      if (sys.argv[1] == 'h' or sys.argv[1] == 'r' or sys.argv[1] == 'mm' or sys.argv[1] == 'ab' or sys.argv[1] == 'mc'):
+        playerOne = sys.argv[1]
+    elif (len(sys.argv) > 2):
+      if ((sys.argv[1] == 'h' or sys.argv[1] == 'r' or sys.argv[1] == 'mm' or sys.argv[1] == 'ab' or sys.argv[1] == 'mc') and \
+          (sys.argv[2] == 'h' or sys.argv[2] == 'r' or sys.argv[2] == 'mm' or sys.argv[2] == 'ab' or sys.argv[2] == 'mc')):
+        playerOne = sys.argv[1]
+        playerTwo = sys.argv[2]
+    else:
+      print("Invalid arguments. To see available arguments, execute 'python mancala.py help'")
+      return
+  PlayMancala(playerOne, playerTwo)
 
 if __name__ == '__main__':
   main()
