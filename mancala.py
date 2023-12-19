@@ -1,6 +1,7 @@
 import random
 import copy
 import sys
+import math
 
 # TOTAL_SPACES = PLAYABLE_SPACES + 2 player zones
 TOTAL_SPACES = 14
@@ -26,21 +27,21 @@ def Utility(player, zone, state):
   num_on_side_two = 0
   score = 0
 
-  # If a player has 49 marbles then they automatically win
-  # if player_one >= 49:
-  #   player_one += 20
-  #   player_two -= 20
-  # elif player_two >= 49:
-  #   player_two += 20
-  #   player_one += 20
-  # # Check how close a player and their opponents is to winning, we multiply the difference of the opponent winning by 0.5 because we should be mainly focused on moves that will g
-  # else:
-  # #   player_one -= (49 - player_one)
-  #   player_one_copy = copy.copy(player_one)
-  #   player_one = (49 - player_two)
-  # #   player_two -= (49 - player_two)
-  #   player_two = (49 - player_one_copy)
 
+  # If a player has 49 marbles then they automatically win
+  if player_one >= 49:
+    player_one += 20
+    player_two -= 20
+  elif player_two >= 49:
+    player_two += 20
+    player_one += 20
+  # Check how close a player and their opponents is to winning, we multiply the difference of the opponent winning by 0.5 because we should be mainly focused on moves that will g
+  else:
+    player_one -= (49 - player_one)
+    # player_one_copy = copy.copy(player_one)
+    # player_one -= (49 - player_two)
+    player_two -= (49 - player_two)
+    # player_two -= (49 - player_one_copy)
 
   for i in range(1,7):
     # This means that they have the chance to steal
@@ -61,46 +62,10 @@ def Utility(player, zone, state):
 
   player_one_copy = copy.copy(player_one)
 
-  if player.get_player() == "1":
+  if player.get_zone() == PLAYER_ONE_ZONE:
     score = player_one - player_two
-  elif player.get_player() == "2":
+  elif player.get_zone() == PLAYER_TWO_ZONE:
     score = player_two - player_one_copy
-
-  # Encourages agent to make the move that will get it another turn
-
-  # if player.get_player() == "1":
-
-  #   if state.mancala_board[1] == 1:
-  #     player_one -= 3
-  #   elif state.mancala_board[2] == 2:
-  #     player_one -= 3
-  #   elif state.mancala_board[3] == 3:
-  #     player_one -= 3
-  #   elif state.mancala_board[4] == 4:
-  #     player_one -= 3
-  #   elif state.mancala_board[5] == 5:
-  #     player_one -= 3
-  #   elif state.mancala_board[6] == 6:
-  #     player_one -= 3
-
-  #   score = player_one - player_two
-  # elif player.get_player() == "2":
-
-  #   if state.mancala_board[8] == 1:
-  #     player_two -= 3
-  #   elif state.mancala_board[9] == 2:
-  #     player_two -= 3
-  #   elif state.mancala_board[10] == 3:
-  #     player_two -= 3
-  #   elif state.mancala_board[11] == 4:
-  #     player_two -= 3
-  #   elif state.mancala_board[12] == 5:
-  #     player_two -= 3
-  #   elif state.mancala_board[13] == 6:
-  #     player_two -= 3
-      
-  #   score = player_two - player_one
-
   return score
   
   
@@ -204,49 +169,132 @@ def min_value(player, state, zone, depthlimit):
   return val, move
 
 class Node:
-    def __init__(self, state, parent=None):
+    def __init__(self, state, zone, untried_actions, depth, action=None, parent=None):
         self.state = state
+        self.zone = zone
+        self.action = action
+        self.untried_actions = untried_actions
+        self.depth = depth
         self.parent = parent
         self.children = []
-        self.num_playout = 0
+        self.visits = 0
         self.value = 0.0
 
-    def is_fully_expanded(self):
+    def is_fully_expanded(self, actions):
         # Check if all possible actions have child nodes
-        return len(self.children) == len(self.get_untried_actions())
+        return len(self.children) == len(actions)
 
-    def get_untried_actions(self):
+    def get_remaining_moves(self):
         # Return a list of moves that haven't been tried yet
-        pass
+        if self.untried_actions == None:
+          self.untried_actions = actions(self.state)
+        return self.untried_actions
 
-    def select(self, constant=1.414):
-        # Select a child node based on the UCB1 formula
-        # UCB1 = value / visits + exploration_weight * sqrt(log(parent_visits) / visits)
-        # You may need to adjust the formula based on your specific requirements
+    def select(self, constant):
 
-        if not self.children:
-            return None
 
-        max_value = -99999
+        max_value = -999999
+        best_node = None
           
         for child in self.children:
-          curr_value = child.value / child.num_playout + constant * (2 * sqrt(math.log(self.num_playout) / child.num_playout))
-          max_value = max(curr_value, max_value)
+          print("CHILD")
+          curr_value = child.value / child.visits + constant * (2 * ((math.log(self.visits) / child.visits) ** 0.5))
+          if curr_value > max_value:
+            max_value = curr_value
+            best_node = child
+        if best_node == None:
+          print(self.children)
+        return best_node
 
-        return max_value
-
-    def expand(self, action, child_state):
+    def expand(self, child_state, curr_action=None):
         # Add a child node with the given action and state
-        child = Node(state=child_state, parent=self)
+        if actions(child_state) == []:
+          return self
+        curr_action = random.choice(actions(child_state))
+        result(child_state, curr_action)
+        child = Node(state=child_state, zone=self.zone, action=curr_action, parent=self, untried_actions=actions(child_state), depth=self.depth-1)
         self.children.append(child)
         return child
 
-class MancalaPlayerTemplate:
-    def __init__(self, myzone, player):
-        self.zone = myzone
+    def back_propogate(self, node, i):
+      result_state = node.state
+      print("BACKING")
+      print(i)
+      if node.parent == None:
+        return
+      if (node.zone == PLAYER_ONE_ZONE):
+        if (result_state.mancala_board[0] > result_state.mancala_board[7]):
+          node.value += 1
+      elif (node.zone == PLAYER_TWO_ZONE):
+        if (node.state.mancala_board[7] > node.state.mancala_board[0]):
+          node.value += 1
+      node.visits += 1
 
-    def get_player(self):
-      return self.player
+      self.back_propogate(node.parent, i+1)
+
+    # def best_child(self):
+    #   best_node = None
+    #   max_playouts = 0
+    #   for child in self.children:
+    #     if child.num_playout > max_playout:
+    #       best_node = child
+    #       max_playout = child.num_playout
+
+    #   return best_node.action
+
+def search(root):
+  root.untried_actions = actions(root.state)
+  if len(root.untried_actions) == 1:
+    return root.untried_actions[0]
+  # Initializing first layer of leaf nodes
+  if root.children == []:
+    for action in root.untried_actions:
+      child_state = copy.deepcopy(root.state)
+      result(child_state, action)
+      root.expand(child_state, action)
+    root.untried_actions = []
+  print("SEARCHING")
+  print(root.children)
+  
+  # Simulating a game for each initial node
+  for child in root.children:
+    game_result = SimulateMancala(child, child.state)
+    if (game_result == True):
+      child.value += 1
+      root.value += 1
+    child.visits += 1
+    root.visits += 1
+
+
+  root.depth -= 1
+      
+  while root.depth != 0:
+    new_state = copy.deepcopy(root.state)
+    leaf = root.select(1.414)
+    print("Visits")
+    print(leaf.visits)
+    child = leaf.expand(new_state)
+    simulated_result = SimulateMancala(child, child.state)
+    root.back_propogate(child, 0)
+    root.depth -= 1
+  
+  best_child = None
+  max_visits = -99999
+  for child in root.children:
+    if child.visits > max_visits and child.action in actions(root.state):
+      max_visits = child.visits
+      best_child = child
+
+  # print(best_child.action)
+  return best_child.action
+
+
+## SELECTION
+    
+
+class MancalaPlayerTemplate:
+    def __init__(self, myzone):
+        self.zone = myzone
 
     def get_zone(self):
         return self.zone
@@ -255,12 +303,8 @@ class MancalaPlayerTemplate:
         return None
 
 class HumanPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, player):
+    def __init__(self, myzone):
         self.zone = myzone
-        self.player = player
-
-    def get_player(self):
-      return self.player
 
     def get_zone(self):
         return self.zone
@@ -284,13 +328,9 @@ class HumanPlayer(MancalaPlayerTemplate):
         return curr_move
 
 class AlphabetaPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, depthlimit, player):
+    def __init__(self, myzone, depthlimit):
         self.zone = myzone
         self.depthlimit = depthlimit
-        self.player = player
-
-    def get_player(self):
-      return self.player
 
     def get_zone(self):
         return self.zone
@@ -304,33 +344,9 @@ class AlphabetaPlayer(MancalaPlayerTemplate):
         return returnTuple[1]
 
 class MinimaxPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, depthlimit, player):
+    def __init__(self, myzone, depthlimit):
         self.zone = myzone
         self.depthlimit = depthlimit
-        self.player = player
-
-    def get_player(self):
-      return self.player
-
-    def get_zone(self):
-        return self.zone
-    
-    def get_depthlimit(self):
-        return self.depthlimit
-    
-    def make_move(self, state):
-        returnTuple = minimax(self, state, self.zone, self.depthlimit)
-        Display(state)
-        return returnTuple[1]
-
-class MonteCarloPlayer(MancalaPlayerTemplate):
-    def __init__(self, myzone, depthlimit, player):
-        self.zone = myzone
-        self.depthlimit = depthlimit
-        self.player = player
-
-    def get_player(self):
-      return self.player
 
     def get_zone(self):
         return self.zone
@@ -344,12 +360,8 @@ class MonteCarloPlayer(MancalaPlayerTemplate):
         return returnTuple[1]
 
 class RandomPlayer(MancalaPlayerTemplate):
-  def __init__(self, myzone, player):
+  def __init__(self, myzone):
     self.zone = myzone
-    self.player = player
-
-  def get_player(self):
-    return self.player
 
   def get_zone(self):
     return self.zone
@@ -360,13 +372,13 @@ class RandomPlayer(MancalaPlayerTemplate):
       decision = random.choice(legal)
     else:
       decision = -1
-    Display(state)
+    # Display(state)
     return decision
 
 class MonteCarloPlayer(MancalaPlayerTemplate):
-  def __init__(self, myzone, depthlimit):
+  def __init__(self, myzone, depth):
     self.zone = myzone
-    self.depthlimit = depthlimit
+    self.depthlimit = depth
 
   def get_zone(self):
     return self.zone
@@ -375,9 +387,11 @@ class MonteCarloPlayer(MancalaPlayerTemplate):
     return self.depthlimit
     
   def make_move(self, state):
-    returnTuple = minimax(state, self.zone, self.depthlimit)
+    node = Node(state, self.get_zone(), untried_actions=actions(state), depth=self.get_depthlimit())
+    decision = search(node)
+    print(decision)
     Display(state)
-    return returnTuple[1]
+    return decision
 
 class MancalaState:
     def __init__(self, current_player, other_player, mancala_board = None):
@@ -623,6 +637,107 @@ def DisplayFinal(state):
   else:
     print("It's a Draw!")
 
+def SimulateMancala(child, state):
+  playerOne = RandomPlayer(PLAYER_ONE_ZONE)
+  playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
+
+  while True:
+
+    action = playerOne.make_move(state)
+    if action not in actions(state) and action != -1:
+      # print("Illegal move made by Player One")
+      # print("Player Two wins!")
+      if (child.zone == PLAYER_TWO_ZONE):
+        return True
+      else:
+        return False
+    elif action not in actions(state) and action == -1 and terminal_test(state):
+      # print("Game Over")
+      # Display(state)
+      # DisplayFinal(state)
+      if (state.mancala_board[0] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return True
+      elif (state.mancala_board[0] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return True
+    moving = TAKE_ANOTHER_MOVE
+    while (moving != END_MOVE):
+      moving = result(state, action)
+      if (moving == ERROR_MOVE):
+        # print("Illegal move made by Player One")
+        # print("Player Two wins!")
+        if (child.zone == PLAYER_TWO_ZONE):
+          return True
+        else:
+          return False
+      elif (moving == TAKE_ANOTHER_MOVE):
+        action = playerOne.make_move(state)
+    
+    newState = MancalaState(state.other, state.current, copy.deepcopy(state.mancala_board))
+    state = MancalaState(newState.current, newState.other, copy.deepcopy(newState.mancala_board))
+    
+    if terminal_test(state):
+      # print("Game Over")
+      # Display(state)
+      # DisplayFinal(state)
+      if (state.mancala_board[0] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return True
+      elif (state.mancala_board[0] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return True
+    action = playerTwo.make_move(state)
+    if action not in actions(state) != -1:
+      # print("Illegal move made by Player Two")
+      # print("Player One wins!")
+      if (child.zone == PLAYER_ONE_ZONE):
+        return True
+      else:
+        return False
+    elif action not in actions(state) and action == -1 and terminal_test(state):
+      # print("Game Over")
+      # Display(state)
+      # DisplayFinal(state)
+      if (state.mancala_board[0] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return True
+      elif (state.mancala_board[0] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return True
+    moving = TAKE_ANOTHER_MOVE
+    while (moving != END_MOVE):
+      moving = result(state, action)
+      if (moving == ERROR_MOVE):
+        # print("Illegal move made by Player One")
+        # print("Player Two wins!")
+        if (child.zone == PLAYER_ONE_ZONE):
+          return True
+        else:
+          return False
+      elif (moving == TAKE_ANOTHER_MOVE):
+        action = playerTwo.make_move(state)
+    
+    newState = MancalaState(state.other, state.current, copy.deepcopy(state.mancala_board))
+    state = MancalaState(newState.current, newState.other, copy.deepcopy(newState.mancala_board))
+    if terminal_test(state):
+      # print("Game Over")
+      # Display(state)
+      # DisplayFinal(state)
+      if (state.mancala_board[0] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return True
+      elif (state.mancala_board[0] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_ONE_ZONE):
+        return False
+      elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_TWO_ZONE):
+        return True
 
 def PlayMancala(playerOne=None, playerTwo=None):
   if playerOne == None:
@@ -632,11 +747,11 @@ def PlayMancala(playerOne=None, playerTwo=None):
   elif playerOne == 'r':
     playerOne = RandomPlayer(PLAYER_ONE_ZONE)
   elif playerOne == 'mm':
-    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 999)
+    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 4)
   elif playerOne == 'ab':
-    playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 999)
+    playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 6)
   elif playerOne == 'mc':
-    playerOne = MonteCarloPlayer(PLAYER_ONE_ZONE)
+    playerOne = MonteCarloPlayer(PLAYER_ONE_ZONE, 2)
   if playerTwo == None:
     playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
   elif playerTwo == 'h':
@@ -644,13 +759,14 @@ def PlayMancala(playerOne=None, playerTwo=None):
   elif playerTwo == 'r':
     playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
   elif playerTwo == 'mm':
-    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 999)
+    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4)
   elif playerTwo == 'ab':
-    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 999)
+    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 6)
   elif playerTwo == 'mc':
-    playerTwo = MonteCarloPlayer(PLAYER_TWO_ZONE)
+    playerTwo = MonteCarloPlayer(PLAYER_TWO_ZONE, 2)
 
   state = MancalaState(playerOne, playerTwo)
+
   while True:
     if terminal_test(state):
       print("Game Over")
