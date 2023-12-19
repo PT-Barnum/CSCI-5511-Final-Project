@@ -202,7 +202,43 @@ def min_value(player, state, zone, depthlimit):
       val, move = v2, action
   return val, move
 
+class Node:
+    def __init__(self, state, parent=None):
+        self.state = state
+        self.parent = parent
+        self.children = []
+        self.num_playout = 0
+        self.value = 0.0
 
+    def is_fully_expanded(self):
+        # Check if all possible actions have child nodes
+        return len(self.children) == len(self.get_untried_actions())
+
+    def get_untried_actions(self):
+        # Return a list of moves that haven't been tried yet
+        pass
+
+    def select(self, constant=1.414):
+        # Select a child node based on the UCB1 formula
+        # UCB1 = value / visits + exploration_weight * sqrt(log(parent_visits) / visits)
+        # You may need to adjust the formula based on your specific requirements
+
+        if not self.children:
+            return None
+
+        max_value = -99999
+          
+        for child in self.children:
+          curr_value = child.value / child.num_playout + constant * (2 * sqrt(math.log(self.num_playout) / child.num_playout))
+          max_value = max(curr_value, max_value)
+
+        return max_value
+
+    def expand(self, action, child_state):
+        # Add a child node with the given action and state
+        child = Node(state=child_state, parent=self)
+        self.children.append(child)
+        return child
 
 class MancalaPlayerTemplate:
     def __init__(self, myzone, player):
