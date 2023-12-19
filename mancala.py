@@ -25,66 +25,80 @@ def Utility(player, zone, state):
   num_on_side_two = 0
   score = 0
 
-  # This means that they have the chance to steal
+  # If a player has 49 marbles then they automatically win
+  # if player_one >= 49:
+  #   player_one += 20
+  #   player_two -= 20
+  # elif player_two >= 49:
+  #   player_two += 20
+  #   player_one += 20
+  # # Check how close a player and their opponents is to winning, we multiply the difference of the opponent winning by 0.5 because we should be mainly focused on moves that will g
+  # else:
+  # #   player_one -= (49 - player_one)
+  #   player_one_copy = copy.copy(player_one)
+  #   player_one = (49 - player_two)
+  # #   player_two -= (49 - player_two)
+  #   player_two = (49 - player_one_copy)
+
+
   for i in range(1,7):
-    # This means that the other player has the chance to steal
+    # This means that they have the chance to steal
     if (state.mancala_board[i] == 0):
       player_one += 3
+      player_two -= 3
     num_on_side_one += state.mancala_board[i]
 
   for i in range(8, 14):
     # This means that they have the chance to steal
     if (state.mancala_board[i] == 0):
       player_two += 3
+      player_one -= 3
     num_on_side_two += state.mancala_board[i]
 
   player_one = (num_on_side_one * 0.5)
   player_two = (num_on_side_two * 0.5)
 
+  player_one_copy = copy.copy(player_one)
+
+  if player.get_player() == "1":
+    score = player_one - player_two
+  elif player.get_player() == "2":
+    score = player_two - player_one_copy
+
   # Encourages agent to make the move that will get it another turn
 
   # if player.get_player() == "1":
 
-  #   if state.mancala_board[1] == 12:
+  #   if state.mancala_board[1] == 1:
   #     player_one -= 3
-  #   elif state.mancala_board[2] == 11:
+  #   elif state.mancala_board[2] == 2:
   #     player_one -= 3
-  #   elif state.mancala_board[3] == 10:
+  #   elif state.mancala_board[3] == 3:
   #     player_one -= 3
-  #   elif state.mancala_board[4] == 9:
+  #   elif state.mancala_board[4] == 4:
   #     player_one -= 3
-  #   elif state.mancala_board[5] == 8:
+  #   elif state.mancala_board[5] == 5:
   #     player_one -= 3
-  #   elif state.mancala_board[6] == 7:
+  #   elif state.mancala_board[6] == 6:
   #     player_one -= 3
 
   #   score = player_one - player_two
-
-  #   if terminal_test(state) and player_one > player_two:
-  #     score += 20
-  #   elif terminal_test(state) and player_one < player_two:
-  #     score -= 20
   # elif player.get_player() == "2":
 
-  #   if state.mancala_board[8] == 12:
+  #   if state.mancala_board[8] == 1:
   #     player_two -= 3
-  #   elif state.mancala_board[9] == 11:
+  #   elif state.mancala_board[9] == 2:
   #     player_two -= 3
-  #   elif state.mancala_board[10] == 10:
+  #   elif state.mancala_board[10] == 3:
   #     player_two -= 3
-  #   elif state.mancala_board[11] == 9:
+  #   elif state.mancala_board[11] == 4:
   #     player_two -= 3
-  #   elif state.mancala_board[12] == 8:
+  #   elif state.mancala_board[12] == 5:
   #     player_two -= 3
-  #   elif state.mancala_board[13] == 7:
+  #   elif state.mancala_board[13] == 6:
   #     player_two -= 3
       
   #   score = player_two - player_one
-
-  #   if terminal_test(state) and player_one < player_two:
-  #     score += 20
-  #   elif terminal_test(state) and player_one > player_two:
-  #     score -= 20
 
   return score
   
@@ -305,7 +319,10 @@ class RandomPlayer(MancalaPlayerTemplate):
 
   def make_move(self, state):
     legal = actions(state)
-    decision = random.choice(legal)
+    if legal != []:
+      decision = random.choice(legal)
+    else:
+      decision = -1
     Display(state)
     return decision
 
@@ -337,7 +354,6 @@ def actions(state):
         legal_actions.append(Index)
   else:
     for Index in range(8, 14):
-      print(Index)
       if (state.mancala_board[Index] > 0):
         legal_actions.append(Index)
   return legal_actions
@@ -347,10 +363,10 @@ def result(state, action):
   zone = state.current.get_zone()
   marbles = state.mancala_board[action]
   state.mancala_board[action] = 0
-  if (action == LAST_ZONE):
-    index = PLAYER_ONE_ZONE
+  if (action == PLAYER_ONE_ZONE):
+    index = LAST_ZONE
   else:
-    index = action + 1
+    index = action - 1
   
   while (marbles):
     if (marbles == 1):
@@ -363,9 +379,9 @@ def result(state, action):
         marbles -= 1
         return TAKE_ANOTHER_MOVE
       elif ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
-        index += 1
+        index = LAST_ZONE
       elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
-        index += 1
+        index -= 1
       else:
         state.mancala_board[index] += 1
         marbles -= 1
@@ -441,17 +457,17 @@ def result(state, action):
         
     else:
       if ((index == PLAYER_ONE_ZONE) and (zone != PLAYER_ONE_ZONE)):
-        index += 1
+        index = LAST_ZONE
       elif ((index == PLAYER_TWO_ZONE) and (zone != PLAYER_TWO_ZONE)):
-        index += 1
-      elif (index == LAST_ZONE):
+        index -= 1
+      elif ((index == PLAYER_ONE_ZONE) and (zone == PLAYER_ONE_ZONE)):
         state.mancala_board[index] += 1
         marbles -= 1
-        index = PLAYER_ONE_ZONE
+        index = LAST_ZONE
       else:
         state.mancala_board[index] += 1
         marbles -= 1
-        index += 1
+        index -= 1
       
   return END_MOVE
 
@@ -461,10 +477,16 @@ def terminal_test(state):
     for Index in range(1, PLAYER_TWO_ZONE):
       if (state.mancala_board[Index] != 0):
         return False
+    for Index in range(8, LAST_ZONE+1):
+      state.mancala_board[PLAYER_TWO_ZONE] += state.mancala_board[Index]
+      state.mancala_board[Index] = 0
   else:
-    for Index in range(8, 14):
+    for Index in range(8, LAST_ZONE+1):
       if (state.mancala_board[Index] != 0):
         return False
+    for Index in range(1, PLAYER_TWO_ZONE):
+      state.mancala_board[PLAYER_ONE_ZONE] += state.mancala_board[Index]
+      state.mancala_board[Index] = 0
 
   return True
 
@@ -486,16 +508,20 @@ def Display(state):
   zoneThirteen = f'{state.mancala_board[13]:02d}'
 
   print()
+  print()
+  print("          ||                       Bins on P1 Side                    ||          ")
   print("  Player 1      1         2         3         4         5         6")
   print("==================================================================================")
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
-  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
+  print("||   P1   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   P2   ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||   %s   ==============================================================   %s   ||" % (zoneZero, zoneSeven))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("==================================================================================")
+  print("          ||                       Bins on P2 Side                    ||          ")
+  print()
   print("               13        12        11        10        9          8     Player 2")
   print()
 
@@ -518,15 +544,17 @@ def DisplayFinal(state):
 
   print()
   print()
+  print("          ||                       Bins on P1 Side                    ||          ")
   print("==================================================================================")
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
-  print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
+  print("||   P1   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   P2   ||" % (zoneOne, zoneTwo, zoneThree, zoneFour, zoneFive, zoneSix))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||   %s   ==============================================================   %s   ||" % (zoneZero, zoneSeven))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("||        ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||   %s   ||        ||" % (zoneThirteen, zoneTwelve, zoneEleven, zoneTen, zoneNine, zoneEight))
   print("||        ||        ||        ||        ||        ||        ||        ||        ||")
   print("==================================================================================")
+  print("          ||                       Bins on P2 Side                    ||          ")
   print()
   print()
   
@@ -547,21 +575,32 @@ def DisplayFinal(state):
 def PlayMancala(playerOne=None, playerTwo=None):
   if playerOne == None:
     # playerOne = HumanPlayer(PLAYER_ONE_ZONE, "1")
-    playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
-    # playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 4, "1")
+    # playerOne = RandomPlayer(PLAYER_ONE_ZONE, "1")
+    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 1, "1")
     # playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 4, "1")
   if playerTwo == None:
     # playerTwo = HumanPlayer(PLAYER_TWO_ZONE, "2")
     # playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 4, "2")
     # playerTwo = RandomPlayer(PLAYER_ONE_ZONE, "2")
-    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 4, "2")
+    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 1, "2")
 
   state = MancalaState(playerOne, playerTwo)
   while True:
+    if terminal_test(state):
+      print("Game Over")
+      Display(state)
+      DisplayFinal(state)
+      return
+
     action = playerOne.make_move(state)
-    if action not in actions(state):
+    if action not in actions(state) and action != -1:
       print("Illegal move made by Player One")
       print("Player Two wins!")
+      return
+    elif action not in actions(state) and action == -1 and terminal_test(state):
+      print("Game Over")
+      Display(state)
+      DisplayFinal(state)
       return
     moving = TAKE_ANOTHER_MOVE
     while (moving != END_MOVE):
@@ -582,9 +621,14 @@ def PlayMancala(playerOne=None, playerTwo=None):
       DisplayFinal(state)
       return
     action = playerTwo.make_move(state)
-    if action not in actions(state):
+    if action not in actions(state) != -1:
       print("Illegal move made by Player Two")
       print("Player One wins!")
+      return
+    elif action not in actions(state) and action == -1 and terminal_test(state):
+      print("Game Over")
+      Display(state)
+      DisplayFinal(state)
       return
     moving = TAKE_ANOTHER_MOVE
     while (moving != END_MOVE):
