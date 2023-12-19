@@ -453,9 +453,9 @@ def PlayMancala(playerOne=None, playerTwo=None):
   elif playerOne == 'r':
     playerOne = RandomPlayer(PLAYER_ONE_ZONE)
   elif playerOne == 'mm':
-    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE)
+    playerOne = MinimaxPlayer(PLAYER_ONE_ZONE, 999)
   elif playerOne == 'ab':
-    playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE)
+    playerOne = AlphabetaPlayer(PLAYER_ONE_ZONE, 999)
   elif playerOne == 'mc':
     playerOne = MonteCarloPlayer(PLAYER_ONE_ZONE)
   if playerTwo == None:
@@ -465,9 +465,9 @@ def PlayMancala(playerOne=None, playerTwo=None):
   elif playerTwo == 'r':
     playerTwo = RandomPlayer(PLAYER_TWO_ZONE)
   elif playerTwo == 'mm':
-    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE)
+    playerTwo = MinimaxPlayer(PLAYER_TWO_ZONE, 999)
   elif playerTwo == 'ab':
-    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE)
+    playerTwo = AlphabetaPlayer(PLAYER_TWO_ZONE, 999)
   elif playerTwo == 'mc':
     playerTwo = MonteCarloPlayer(PLAYER_TWO_ZONE)
 
@@ -551,11 +551,17 @@ def main():
     elif (len(sys.argv) == 2):
       if (sys.argv[1] == 'h' or sys.argv[1] == 'r' or sys.argv[1] == 'mm' or sys.argv[1] == 'ab' or sys.argv[1] == 'mc'):
         playerOne = sys.argv[1]
+      else:
+        print("Invalid arguments. To see available arguments, execute 'python mancala.py help'")
+        return
     elif (len(sys.argv) > 2):
       if ((sys.argv[1] == 'h' or sys.argv[1] == 'r' or sys.argv[1] == 'mm' or sys.argv[1] == 'ab' or sys.argv[1] == 'mc') and \
           (sys.argv[2] == 'h' or sys.argv[2] == 'r' or sys.argv[2] == 'mm' or sys.argv[2] == 'ab' or sys.argv[2] == 'mc')):
         playerOne = sys.argv[1]
         playerTwo = sys.argv[2]
+      else:
+        print("Invalid arguments. To see available arguments, execute 'python mancala.py help'")
+        return
     else:
       print("Invalid arguments. To see available arguments, execute 'python mancala.py help'")
       return
