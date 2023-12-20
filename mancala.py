@@ -30,11 +30,11 @@ def Utility(player, zone, state):
 
   # If a player has 49 marbles then they automatically win
   if player_one >= 49:
-    player_one += 20
-    player_two -= 20
+    player_one += 500
+    player_two -= 500
   elif player_two >= 49:
-    player_two += 20
-    player_one += 20
+    player_two += 500
+    player_one -= 500
   # Check how close a player is to winning
   else:
     player_one -= (49 - player_one)
