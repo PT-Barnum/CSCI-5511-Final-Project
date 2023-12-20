@@ -257,7 +257,9 @@ def search(root):
     if child.visits > max_visits and child.action in actions(root.state):
       max_visits = child.visits
       best_child = child
-
+  if best_child == None:
+    return copy_root.children[0]
+    
   return best_child.action
 
     
