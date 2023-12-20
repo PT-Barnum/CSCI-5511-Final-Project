@@ -338,6 +338,8 @@ class RandomPlayer(MancalaPlayerTemplate):
 
   def make_move(self, state):
     legal = actions(state)
+    if (legal == []): 
+      return None
     decision = random.choice(legal)
     # Display(state)
     return decision
@@ -391,6 +393,8 @@ def actions(state):
 
 
 def result(state, action):
+  if (action == None):
+    return END_MOVE
   zone = state.current.get_zone()
   marbles = state.mancala_board[action]
   state.mancala_board[action] = 0
