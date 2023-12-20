@@ -338,7 +338,10 @@ class RandomPlayer(MancalaPlayerTemplate):
 
   def make_move(self, state):
     legal = actions(state)
-    decision = random.choice(legal)
+    if legal != []:
+      decision = random.choice(legal)
+    else:
+      return -1
     # Display(state)
     return decision
 
