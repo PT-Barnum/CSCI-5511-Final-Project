@@ -63,7 +63,7 @@ def Utility(player, zone, state):
   
 
 def alpha_beta_search(player, state, zone, depthlimit):
-  if ((depthlimit == 0) or terminal_test(state)):
+  if ((depthlimit == 0) or terminal_test(state) != True):
     val = Utility(player, zone, state)
     legalActions = actions(state)
     move = random.choice(legalActions)
@@ -338,10 +338,7 @@ class RandomPlayer(MancalaPlayerTemplate):
 
   def make_move(self, state):
     legal = actions(state)
-    if legal != []:
-      decision = random.choice(legal)
-    else:
-      return -1
+    decision = random.choice(legal)
     # Display(state)
     return decision
 
@@ -629,6 +626,15 @@ def SimulateMancala(child, state):
         return True
     moving = TAKE_ANOTHER_MOVE
     while (moving != END_MOVE):
+      if terminal_test(state):
+        if (state.mancala_board[0] >= 49 and child.zone == PLAYER_ONE_ZONE):
+          return True
+        elif (state.mancala_board[0] >= 49 and child.zone == PLAYER_TWO_ZONE):
+          return False
+        elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_ONE_ZONE):
+          return False
+        elif (state.mancala_board[7] >= 49 and child.zone == PLAYER_TWO_ZONE):
+          return True
       moving = result(state, action)
       if (moving == ERROR_MOVE):
         if (child.zone == PLAYER_TWO_ZONE):
